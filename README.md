@@ -108,4 +108,8 @@ or build from source (requires Go 1.10+), or use [the pre-built binaries](https:
 
 ## Personal Notes
 
-> I use this primarily for local Docker-based development. A quick tip: store your generated certs in a dedicated `~/.local/share/mkcert/certs/` directory and symlink them into your project folders to avoid accidentally committing them to version control.
+> I use this primarily for local Docker-based development. A handy one-liner to generate certs for a typical local setup:
+> ```
+> mkcert localhost 127.0.0.1 ::1 myapp.local
+> ```
+> After running `mkcert -install` once, this covers most local dev scenarios without any extra config.
