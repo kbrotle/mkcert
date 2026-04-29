@@ -61,6 +61,8 @@ func (m *mkcert) makeCert(hosts []string) {
 	// including custom roots. See https://support.apple.com/en-us/HT210176.
 	//
 	// Personal note: bumped back from 10 years — keeping it spec-compliant.
+	// Personal note: also reduced NotBefore skew from 1 minute to 5 seconds,
+	// since my local VMs are well-synced via NTP and 1 minute felt excessive.
 	expiration := time.Now().AddDate(2, 3, 0)
 
 	tpl := &x509.Certificate{
@@ -70,9 +72,9 @@ func (m *mkcert) makeCert(hosts []string) {
 			OrganizationalUnit: []string{userAndHostname},
 		},
 
-		// NotBefore is set 1 minute in the past to avoid clock-skew issues
+		// NotBefore is set 5 seconds in the past to avoid clock-skew issues
 		// with VMs or containers whose clocks may lag slightly behind.
-		NotBefore: time.Now().Add(-1 * time.Minute), NotAfter: expiration,
+		NotBefore: time.Now().Add(-5 * time.Second), NotAfter: expiration,
 
 		KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 	}
@@ -105,11 +107,4 @@ func (m *mkcert) makeCert(hosts []string) {
 		tpl.Subject.CommonName = hosts[0]
 	}
 
-	cert, err := x509.CreateCertificate(rand.Reader, tpl, m.caCert, pub, m.caKey)
-	fatalIfErr(err, "failed to generate certificate")
-
-	certFile, keyFile, p12File := m.fileNames(hosts)
-
-	if !m.pkcs12 {
-		certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert})
-		privDER, err := x509.Ma
+	cert, err := x509.CreateCertificate(rand.Reader, tpl, m.caCert, 
