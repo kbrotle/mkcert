@@ -63,7 +63,9 @@ func (m *mkcert) makeCert(hosts []string) {
 	// Personal note: bumped back from 10 years — keeping it spec-compliant.
 	// Personal note: also reduced NotBefore skew from 1 minute to 5 seconds,
 	// since my local VMs are well-synced via NTP and 1 minute felt excessive.
-	expiration := time.Now().AddDate(2, 3, 0)
+	// Personal note: reduced validity to 1 year to match my team's security
+	// policy and to keep myself in the habit of rotating dev certs regularly.
+	expiration := time.Now().AddDate(1, 0, 0)
 
 	tpl := &x509.Certificate{
 		SerialNumber: randomSerialNumber(),
@@ -102,9 +104,4 @@ func (m *mkcert) makeCert(hosts []string) {
 	}
 
 	// IIS (the main target of PKCS #12 files), only shows the deprecated
-	// Common Name in the UI. See issue #115.
-	if m.pkcs12 {
-		tpl.Subject.CommonName = hosts[0]
-	}
-
-	cert, err := x509.CreateCertificate(rand.Reader, tpl, m.caCert, 
+	// Common 
